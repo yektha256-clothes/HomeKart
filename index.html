@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ml">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HOME KART PRO</title>
+<title>Home Kart</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
   --primary:#1a3c34;
-  --bg:#f4f4f4;
+  --bg:#f8f7f4;
 }
 
 body{
@@ -21,10 +21,10 @@ body{
 
 /* HEADER */
 header{
+  background:#fff;
   display:flex;
   justify-content:space-between;
   padding:15px 20px;
-  background:#fff;
   position:sticky;
   top:0;
   z-index:10;
@@ -37,21 +37,9 @@ header{
   font-size:22px;
 }
 
-.search{
-  flex:1;
-  margin:0 20px;
-}
-
-.search input{
-  width:100%;
-  padding:8px;
-  border:1px solid #ddd;
-  border-radius:6px;
-}
-
 .cart{
-  font-weight:700;
   cursor:pointer;
+  font-weight:700;
 }
 
 /* HERO */
@@ -62,14 +50,14 @@ header{
   align-items:center;
   justify-content:center;
   color:#fff;
-  font-size:28px;
+  font-size:26px;
   font-weight:800;
 }
 
 /* GRID */
 .container{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
   gap:15px;
   padding:20px;
 }
@@ -82,9 +70,7 @@ header{
   transition:0.3s;
 }
 
-.card:hover{
-  transform:scale(1.03);
-}
+.card:hover{transform:scale(1.03);}
 
 .card img{
   width:100%;
@@ -127,22 +113,30 @@ header{
   gap:10px;
 }
 
-/* CART DRAWER */
-#cartDrawer{
-  position:fixed;
-  right:-400px;
-  top:0;
-  width:350px;
-  height:100%;
+/* CART */
+#cartPage{
+  display:none;
+  padding:20px;
   background:#fff;
-  box-shadow:-2px 0 10px rgba(0,0,0,0.2);
-  padding:15px;
-  transition:0.3s;
-  z-index:999;
 }
 
-#cartDrawer.open{
-  right:0;
+.checkout{
+  display:flex;
+  gap:20px;
+}
+
+.left{
+  flex:2;
+}
+
+.right{
+  flex:1;
+  position:sticky;
+  top:80px;
+  background:#fafafa;
+  padding:15px;
+  border-radius:10px;
+  height:max-content;
 }
 
 button{
@@ -160,28 +154,20 @@ button{
 <body>
 
 <header>
-  <div class="logo">HOME KART PRO</div>
-
-  <div class="search">
-    <input oninput="search(this.value)" placeholder="Search products...">
-  </div>
-
-  <div class="cart" onclick="toggleCart()">
-    Cart (<span id="count">0</span>)
-  </div>
+  <div class="logo">HOME KART</div>
+  <div class="cart" onclick="openCart()">Cart (<span id="count">0</span>)</div>
 </header>
 
-<div class="hero">Premium Shopping Experience</div>
+<div class="hero">Premium Household Store</div>
 
 <div class="container" id="home"></div>
 
 <div id="productPage"></div>
 
-<!-- CART DRAWER -->
-<div id="cartDrawer"></div>
+<div id="cartPage"></div>
 
 <script>
-const SHEET_ID="1tsx2UL01ZvHRVR_sSArcD7X_mvAZ4XDi9rABF59HIDY";
+const SHEET_ID='1tsx2UL01ZvHRVR_sSArcD7X_mvAZ4XDi9rABF59HIDY';
 
 let products=[];
 let cart=[];
@@ -202,14 +188,14 @@ async function load(){
     desc:r.c[5]?.v
   }));
 
-  render(products);
+  renderHome();
 }
 
-/* RENDER */
-function render(list){
+/* HOME */
+function renderHome(){
   document.getElementById("home").innerHTML=
-  list.map((p,i)=>`
-    <div class="card" onclick="openProduct(${products.indexOf(p)})">
+  products.map((p,i)=>`
+    <div class="card" onclick="openProduct(${i})">
       <img src="${p.img}">
       <div class="card-body">
         <div>${p.name}</div>
@@ -219,20 +205,14 @@ function render(list){
   `).join("");
 }
 
-/* SEARCH */
-function search(val){
-  let filtered=products.filter(p=>p.name.toLowerCase().includes(val.toLowerCase()));
-  render(filtered);
-}
-
-/* PRODUCT */
+/* PRODUCT PAGE */
 function openProduct(i){
   selectedProduct=products[i];
 
   let related=products.filter(p=>p.cat===selectedProduct.cat);
 
-  document.getElementById("productPage").style.display="block";
   document.getElementById("home").style.display="none";
+  document.getElementById("productPage").style.display="block";
 
   document.getElementById("productPage").innerHTML=`
     <button onclick="back()">← Back</button>
@@ -264,36 +244,41 @@ function openProduct(i){
   `;
 }
 
-/* BUY NOW FIX */
+/* BUY NOW FIXED */
 function buyNow(){
-  cart=[selectedProduct];
+  cart=[selectedProduct];   // ONLY THIS PRODUCT
   openCart();
 }
 
-/* CART */
+/* ADD CART */
 function addCart(){
   cart.push(selectedProduct);
   document.getElementById("count").innerText=cart.length;
-  openCart();
 }
 
-/* CART DRAWER */
-function toggleCart(){
-  document.getElementById("cartDrawer").classList.toggle("open");
-  renderCart();
-}
+/* CART */
+function openCart(){
+  document.getElementById("home").style.display="none";
+  document.getElementById("productPage").style.display="none";
+  document.getElementById("cartPage").style.display="block";
 
-function renderCart(){
-  document.getElementById("cartDrawer").innerHTML=`
-    <h3>Cart</h3>
+  document.getElementById("cartPage").innerHTML=`
+    <button onclick="back()">← Continue Shopping</button>
 
-    ${cart.map(p=>`
-      <p>${p.name} - ₹${p.price}</p>
-    `).join("")}
+    <div class="checkout">
+      <div class="left">
+        <h2>Cart Items</h2>
+        ${cart.map(p=>`
+          <p>${p.name} - ₹${p.price}</p>
+        `).join("")}
+      </div>
 
-    <h4>Total: ₹${cart.reduce((a,b)=>a+b.price,0)}</h4>
-
-    <button onclick="checkout()">Checkout</button>
+      <div class="right">
+        <h3>Summary</h3>
+        <p>Total: ₹${cart.reduce((a,b)=>a+b.price,0)}</p>
+        <button onclick="checkout()">Checkout</button>
+      </div>
+    </div>
   `;
 }
 
@@ -301,13 +286,14 @@ function renderCart(){
 function checkout(){
   cart=[];
   document.getElementById("count").innerText=0;
-  alert("Order placed successfully!");
+  back();
 }
 
 /* BACK */
 function back(){
   document.getElementById("home").style.display="grid";
   document.getElementById("productPage").style.display="none";
+  document.getElementById("cartPage").style.display="none";
 }
 
 load();
