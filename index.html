@@ -2,14 +2,14 @@
 <html lang="ml">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Home Kart - Premium Household Store</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
   <style>
     :root { --primary: #1a3c34; --bg: #f8f7f4; }
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; touch-action: manipulation; } /* No Double Tap Zoom */
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: #1a1a1a; }
 
     header {
@@ -38,22 +38,41 @@
     }
     .hero-content h1 { font-size: 2.8rem; text-shadow: 0 2px 10px rgba(0,0,0,0.7); }
 
-    .container { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
+    /* Shopify Style Section Title */
+    .section-title {
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 35px 0 15px;
+      letter-spacing: -0.5px;
+    }
+
+    .container { padding: 0 15px 40px; max-width: 1200px; margin: 0 auto; }
     main { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
 
+    /* Shopify Styled Cards */
     .card {
       background: white;
-      border-radius: 12px;
+      border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       cursor: pointer;
+      transition: transform 0.2s;
     }
-    .card img { width: 100%; aspect-ratio: 1 / 1.05; object-fit: cover; }
-    .info { padding: 12px; }
-    .old-price { text-decoration: line-through; color: #999; }
-    .current-price { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+    .card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+    .info { padding: 14px; }
+    .info h4 { font-size: 0.95rem; font-weight: 500; color: #333; margin-bottom: 6px; line-height: 1.4; }
+    .old-price { text-decoration: line-through; color: #888; font-size: 0.85rem; margin-right: 5px; }
+    .current-price { font-size: 1.1rem; font-weight: 600; color: #121212; }
+    
+    .add-cart-btn {
+      width: 100%; padding: 10px; background: transparent; color: var(--primary);
+      border: 1px solid var(--primary); border-radius: 4px; font-weight: 600;
+      margin-top: 12px; cursor: pointer; font-size: 0.85rem; transition: 0.2s;
+    }
+    .add-cart-btn:hover { background: var(--primary); color: white; }
 
-    /* Detail Page */
+    /* Detail, Cart & Checkout Overlay Fixes */
     .detail-page, .cart-page, .checkout-page {
       display: none;
       position: fixed;
@@ -61,26 +80,31 @@
       width: 100%; height: 100%;
       background: white;
       z-index: 2000;
-      overflow-y: auto;
+      overflow-y: scroll; /* Scrollbar പ്രശ്നം പരിഹരിച്ചു */
+      -webkit-overflow-scrolling: touch;
     }
-    .detail-content, .cart-content, .checkout-content { padding: 15px; }
+    .detail-content, .cart-content, .checkout-content { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+    /* Shopify Detail Text Style */
+    #detailName { font-size: 1.8rem; font-weight: 600; color: #121212; }
+    #detailDesc { font-size: 0.95rem; color: #444; line-height: 1.6; }
 
     .quantity {
       display: flex;
       align-items: center;
       gap: 15px;
-      margin: 15px 0;
+      margin: 20px 0;
     }
     .quantity button {
-      width: 35px; height: 35px;
-      border: 1px solid #ddd;
+      width: 40px; height: 40px;
+      border: 1px solid #ccc;
       background: white;
-      font-size: 1.2rem;
+      font-size: 1.2rem; cursor: pointer;
     }
 
-    /* Cart & Checkout */
-    .cart-item { display: flex; padding: 12px 0; border-bottom: 1px solid #eee; }
-    .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 12px; }
+    /* Cart & Checkout Items */
+    .cart-item { display: flex; padding: 15px 0; border-bottom: 1px solid #eee; align-items: center; }
+    .cart-item img { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; margin-right: 15px; }
 
     .whatsapp-float {
       position: fixed; bottom: 20px; right: 20px;
@@ -114,72 +138,77 @@
   </div>
 </div>
 
+<h2 class="section-title">Our Products</h2>
+
 <div class="container">
   <main id="products-grid"></main>
 </div>
 
 <footer>
-  <p><strong>Home Kart</strong> © 2026 • Premium Household Store</p>
+  <p><strong>Home Kart</strong> ©️ 2026 • Premium Household Store</p>
 </footer>
 
 <a href="https://wa.me/9656201833" class="whatsapp-float" target="_blank">
   <i class="fab fa-whatsapp"></i>
 </a>
 
-<!-- Product Detail Page -->
 <div id="detailPage" class="detail-page">
   <div class="detail-content">
-    <span onclick="closeDetail()" style="font-size:28px;float:right;cursor:pointer;">✕</span>
-    <img id="detailImg" style="width:100%; border-radius:12px;" src="">
+    <span onclick="closeDetail()" style="font-size:28px;float:right;cursor:pointer;padding:10px;">✕</span>
+    <img id="detailImg" style="width:100%; border-radius:8px; aspect-ratio:1/1; object-fit:cover;" src="">
     <h1 id="detailName" style="margin:15px 0 8px;"></h1>
     
-    <div id="detailPrice" style="font-size:1.8rem; font-weight:700; color:var(--primary);"></div>
+    <div id="detailPrice" style="font-size:1.5rem; font-weight:600; color:#121212;"></div>
     
     <div class="quantity">
       <button onclick="changeQty(-1)">−</button>
-      <span id="quantity" style="font-size:1.3rem; width:40px; text-align:center;">1</span>
+      <span id="quantity" style="font-size:1.2rem; width:40px; text-align:center;">1</span>
       <button onclick="changeQty(1)">+</button>
     </div>
 
-    <div id="detailDesc" style="line-height:1.7; margin:20px 0;"></div>
+    <div id="detailDesc" style="margin:20px 0;"></div>
 
-    <button onclick="buyNow()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1.2rem; margin:10px 0;">
+    <button onclick="buyNow()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:4px; font-size:1.1rem; font-weight:600; margin:10px 0; cursor:pointer;">
       BUY NOW
     </button>
+
+    <hr style="margin: 30px 0 20px; border: 0; border-top: 1px solid #eee;">
+    <h3 style="margin-bottom: 15px; font-weight: 600;">You May Also Like</h3>
+    <div id="related-products-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;"></div>
   </div>
 </div>
 
-<!-- Full Screen Cart Page -->
 <div id="cartPage" class="cart-page">
   <div class="cart-content">
-    <h2 style="padding:15px; border-bottom:1px solid #eee;">Your Cart (<span id="cartPageCount">0</span>)</h2>
+    <span onclick="closeCartPage()" style="font-size:28px;float:right;cursor:pointer;padding:10px;">✕</span>
+    <h2 style="padding:15px 0; border-bottom:1px solid #eee;">Your Cart (<span id="cartPageCount">0</span>)</h2>
     <div id="cartPageItems"></div>
     
-    <div style="padding:20px; border-top:2px solid #eee;">
+    <div style="padding:20px 0; margin-top:20px;">
       <h3>Total: ₹<span id="cartTotal">0</span></h3>
-      <button onclick="proceedFromCart()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:8px; margin-top:15px;">
+      <button onclick="proceedFromCart()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:4px; margin-top:15px; font-weight:600; cursor:pointer;">
         PROCEED TO CHECKOUT
       </button>
-      <button onclick="closeCartPage()" style="width:100%; padding:14px; background:#eee; margin-top:10px;">Continue Shopping</button>
+      <button onclick="closeCartPage()" style="width:100%; padding:14px; background:#eee; border:none; border-radius:4px; margin-top:10px; cursor:pointer;">Continue Shopping</button>
     </div>
   </div>
 </div>
 
-<!-- Checkout Page -->
 <div id="checkoutPage" class="checkout-page">
   <div class="checkout-content">
-    <h2>Checkout</h2>
-    <div id="checkoutSummary" style="margin:20px 0;"></div>
+    <span onclick="closeCheckout()" style="font-size:28px;float:right;cursor:pointer;padding:10px;">✕</span>
+    <h2 style="padding:15px 0;">Checkout</h2>
+    <div id="checkoutSummary" style="margin:20px 0; background:#f4f4f2; padding:15px; border-radius:6px;"></div>
     
     <h3>Delivery Details</h3>
-    <input type="tel" id="phone" placeholder="Phone Number *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
-    <textarea id="address" rows="4" placeholder="Full Address *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;"></textarea>
-    <input type="text" id="pincode" placeholder="Pin Code *" maxlength="6" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+    <input type="tel" id="phone" placeholder="Phone Number *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:4px;">
+    <textarea id="address" rows="4" placeholder="Full Address *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:4px; font-family:inherit;"></textarea>
+    <input type="text" id="pincode" placeholder="Pin Code *" maxlength="6" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:4px;">
 
-    <button onclick="submitOrder()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:8px; margin-top:20px;">
+    <button onclick="submitOrder()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:4px; margin-top:20px; font-weight:600; cursor:pointer;">
       SEND ORDER VIA WHATSAPP
     </button>
-    <button onclick="closeCheckout()" style="width:100%; padding:14px; background:#eee; margin-top:10px;">Back</button>
+    <button onclick="closeCheckout()" style="width:100%; padding:14px; background:#eee; border:none; border-radius:4px; margin-top:10px; cursor:pointer;">Back</button>
   </div>
 </div>
 
@@ -189,6 +218,7 @@
   let cart = JSON.parse(localStorage.getItem('homeKartCart')) || [];
   let currentProduct = null;
   let currentQty = 1;
+  let checkoutMode = 'cart'; // 'cart' അല്ലെങ്കിൽ 'buynow' തിരിച്ചറിയാൻ
 
   async function fetchProducts() {
     try {
@@ -234,12 +264,36 @@
     document.getElementById('detailName').innerText = currentProduct.name;
     updateDetailPrice();
     document.getElementById('detailDesc').innerHTML = `<p>${currentProduct.details}</p>`;
+    
+    // തനിയെ സ്ക്രോൾ ടോപ്പിലേക്ക് മാറ്റാൻ
+    document.getElementById('detailPage').scrollTop = 0;
     document.getElementById('detailPage').style.display = 'block';
+
+    displayRelatedProducts(i);
+  }
+
+  // ഡീറ്റെയിൽ പേജിന് താഴെ മറ്റു പ്രൊഡക്റ്റുകൾ കാണിക്കാൻ
+  function displayRelatedProducts(currentIndex) {
+    const relatedGrid = document.getElementById('related-products-grid');
+    const filtered = allProducts.filter((_, idx) => idx !== currentIndex).slice(0, 4);
+    
+    relatedGrid.innerHTML = filtered.map(p => {
+      const originalIndex = allProducts.findIndex(prod => prod.name === p.name);
+      return `
+        <div class="card" onclick="showDetail(${originalIndex})">
+          <img src="${p.photo}" alt="${p.name}">
+          <div class="info" style="padding:8px;">
+            <h4 style="font-size:0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</h4>
+            <span class="current-price" style="font-size:0.95rem;">₹${p.price}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   function updateDetailPrice() {
     const total = currentProduct.price * currentQty;
-    document.getElementById('detailPrice').innerHTML = `₹${total} <small style="font-size:1rem;">(${currentQty} × ₹${currentProduct.price})</small>`;
+    document.getElementById('detailPrice').innerHTML = `₹${total} <small style="font-size:0.9rem; color:#666;">(${currentQty} × ₹${currentProduct.price})</small>`;
     document.getElementById('quantity').innerText = currentQty;
   }
 
@@ -248,23 +302,18 @@
     updateDetailPrice();
   }
 
+  // BUY NOW ക്ലിക്ക് ചെയ്യുമ്പോൾ അലേർട്ട് ഒഴിവാക്കി നേരിട്ട് ചെക്കൗട്ടിലേക്ക്
   function buyNow() {
-    addToCartWithQty(currentProduct, currentQty);
+    checkoutMode = 'buynow';
     closeDetail();
     showCheckoutPage();
   }
 
   function addToCart(i) {
-    addToCartWithQty(allProducts[i], 1);
-  }
-
-  function addToCartWithQty(product, qty) {
-    for(let i = 0; i < qty; i++) {
-      cart.push(product);
-    }
+    cart.push(allProducts[i]);
     localStorage.setItem('homeKartCart', JSON.stringify(cart));
     updateCartCount();
-    alert(`${product.name} (${qty} qty) added to cart!`);
+    alert(`${allProducts[i].name} added to cart!`);
   }
 
   function updateCartCount() {
@@ -273,7 +322,7 @@
 
   function showCartPage() {
     if (cart.length === 0) {
-      alert("നിന്റെ കാർട്ട് ശൂന്യമാണ്!");
+      alert("നിങ്ങളുടെ കാർട്ട് ശൂന്യമാണ്!");
       return;
     }
     let html = '';
@@ -285,10 +334,10 @@
         <div class="cart-item">
           <img src="${item.photo}">
           <div style="flex:1;">
-            <div>${item.name}</div>
-            <div style="color:var(--primary);font-weight:700;">₹${item.price}</div>
+            <div style="font-size:0.95rem; font-weight:500;">${item.name}</div>
+            <div style="color:#121212;font-weight:600;margin-top:4px;">₹${item.price}</div>
           </div>
-          <button onclick="removeFromCart(${index})" style="color:red;background:none;border:none;font-size:1.5rem;">✕</button>
+          <button onclick="removeFromCart(${index})" style="color:#e74c3c;background:none;border:none;font-size:1.3rem;cursor:pointer;padding:10px;">✕</button>
         </div>`;
     });
 
@@ -302,7 +351,11 @@
     cart.splice(index, 1);
     localStorage.setItem('homeKartCart', JSON.stringify(cart));
     updateCartCount();
-    showCartPage();
+    if(cart.length === 0) {
+      closeCartPage();
+    } else {
+      showCartPage();
+    }
   }
 
   function closeCartPage() {
@@ -310,6 +363,7 @@
   }
 
   function proceedFromCart() {
+    checkoutMode = 'cart';
     closeCartPage();
     showCheckoutPage();
   }
@@ -317,11 +371,27 @@
   function showCheckoutPage() {
     let html = '';
     let total = 0;
-    cart.forEach(item => {
-      total += item.price;
-      html += `<div>${item.name} - ₹${item.price}</div>`;
-    });
-    document.getElementById('checkoutSummary').innerHTML = html + `<h3 style="margin-top:15px;">Total: ₹${total}</h3>`;
+
+    if (checkoutMode === 'buynow') {
+      // Buy Now ആണെങ്കിൽ ഈ ഒരു പ്രൊഡക്റ്റ് മാത്രം കാണിക്കും
+      total = currentProduct.price * currentQty;
+      html += `<div style="display:flex; justify-content:between; margin-bottom:8px; font-size:0.95rem;">
+                <span style="flex:1;">${currentProduct.name} (x${currentQty})</span>
+                <span style="font-weight:600;">₹${total}</span>
+               </div>`;
+    } else {
+      // Cart വഴി വരികയാണെങ്കിൽ കാർട്ടിലെ മുഴുവൻ സാധനങ്ങളും കാണിക്കും
+      cart.forEach(item => {
+        total += item.price;
+        html += `<div style="display:flex; justify-content:between; margin-bottom:8px; font-size:0.95rem;">
+                  <span style="flex:1;">${item.name}</span>
+                  <span style="font-weight:600;">₹${item.price}</span>
+                 </div>`;
+      });
+    }
+
+    document.getElementById('checkoutSummary').innerHTML = html + `<hr style="margin:10px 0;border-top:1px solid #ccc;"><div style="display:flex; justify-content:space-between;"><h3>Total:</h3><h3>₹${total}</h3></div>`;
+    document.getElementById('checkoutPage').scrollTop = 0;
     document.getElementById('checkoutPage').style.display = 'block';
   }
 
@@ -339,21 +409,33 @@
       return;
     }
 
-    let msg = `🛒 New Order - Home Kart\n\n`;
-    msg += `📞 Phone: ${phone}\n`;
-    msg += `📍 Address: ${address}\n`;
-    msg += `📌 Pincode: ${pincode}\n\n`;
-    msg += `🛍️ Items:\n`;
+    let msg = `🛒 *New Order - Home Kart*\n\n`;
+    msg += `📞 *Phone:* ${phone}\n`;
+    msg += `📍 *Address:* ${address}\n`;
+    msg += `📌 *Pincode:* ${pincode}\n\n`;
+    msg += `🛍️ *Items:* \n`;
 
-    cart.forEach(item => {
-      msg += `- ${item.name} - ₹${item.price}\n`;
-    });
+    let total = 0;
+    if (checkoutMode === 'buynow') {
+      total = currentProduct.price * currentQty;
+      msg += `- ${currentProduct.name} (Qty: ${currentQty}) - ₹${total}\n`;
+    } else {
+      cart.forEach(item => {
+        total += item.price;
+        msg += `- ${item.name} - ₹${item.price}\n`;
+      });
+    }
+    
+    msg += `\n💰 *Total Amount:* ₹${total}`;
 
     window.open(`https://wa.me/9656201833?text=${encodeURIComponent(msg)}`, "_blank");
 
-    cart = [];
-    localStorage.setItem('homeKartCart', JSON.stringify(cart));
-    updateCartCount();
+    if (checkoutMode === 'cart') {
+      cart = [];
+      localStorage.setItem('homeKartCart', JSON.stringify(cart));
+      updateCartCount();
+    }
+    
     closeCheckout();
     alert("നന്ദി! ഓർഡർ WhatsApp-ൽ അയച്ചു.");
   }
