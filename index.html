@@ -189,10 +189,6 @@
   let cart = JSON.parse(localStorage.getItem('homeKartCart')) || [];
   let currentProduct = null;
   let currentQty = 1;
-  let directBuyItems = [];
-  let isDirectBuy = false;
-  let directBuyItems = [];
-  let isDirectCheckout = false;
 
   async function fetchProducts() {
     try {
@@ -253,12 +249,10 @@
   }
 
   function buyNow() {
-  directBuyItems = [];
-  for(let i=0;i<currentQty;i++){ directBuyItems.push(currentProduct); }
-  isDirectBuy = true;
-  closeDetail();
-  showCheckoutPage();
-}
+    addToCartWithQty(currentProduct, currentQty);
+    closeDetail();
+    showCheckoutPage();
+  }
 
   function addToCart(i) {
     addToCartWithQty(allProducts[i], 1);
@@ -270,7 +264,7 @@
     }
     localStorage.setItem('homeKartCart', JSON.stringify(cart));
     updateCartCount();
-    
+    alert(`${product.name} (${qty} qty) added to cart!`);
   }
 
   function updateCartCount() {
