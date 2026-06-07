@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Home Kart - Shopify Style</title>
+<title>HOME KART PRO</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
   --primary:#1a3c34;
-  --bg:#f5f5f5;
+  --bg:#f4f4f4;
 }
 
 body{
@@ -32,14 +32,26 @@ header{
 }
 
 .logo{
-  font-weight:700;
+  font-weight:800;
   color:var(--primary);
   font-size:22px;
 }
 
+.search{
+  flex:1;
+  margin:0 20px;
+}
+
+.search input{
+  width:100%;
+  padding:8px;
+  border:1px solid #ddd;
+  border-radius:6px;
+}
+
 .cart{
+  font-weight:700;
   cursor:pointer;
-  font-weight:600;
 }
 
 /* HERO */
@@ -50,11 +62,11 @@ header{
   align-items:center;
   justify-content:center;
   color:#fff;
-  font-size:26px;
-  font-weight:700;
+  font-size:28px;
+  font-weight:800;
 }
 
-/* PRODUCT GRID */
+/* GRID */
 .container{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -86,7 +98,7 @@ header{
 
 .price{
   color:var(--primary);
-  font-weight:700;
+  font-weight:800;
 }
 
 /* PRODUCT PAGE */
@@ -96,19 +108,15 @@ header{
   background:#fff;
 }
 
-.product-wrapper{
+.product{
   display:flex;
   gap:20px;
   flex-wrap:wrap;
 }
 
-.product-wrapper img{
+.product img{
   width:320px;
   border-radius:10px;
-}
-
-.details{
-  flex:1;
 }
 
 /* RELATED */
@@ -119,30 +127,22 @@ header{
   gap:10px;
 }
 
-/* CART / CHECKOUT */
-#cartPage{
-  display:none;
-  padding:20px;
+/* CART DRAWER */
+#cartDrawer{
+  position:fixed;
+  right:-400px;
+  top:0;
+  width:350px;
+  height:100%;
   background:#fff;
-}
-
-.checkout-box{
-  display:flex;
-  gap:20px;
-}
-
-.left{
-  flex:2;
-}
-
-.right{
-  flex:1;
-  position:sticky;
-  top:80px;
-  background:#fafafa;
+  box-shadow:-2px 0 10px rgba(0,0,0,0.2);
   padding:15px;
-  border-radius:10px;
-  height:max-content;
+  transition:0.3s;
+  z-index:999;
+}
+
+#cartDrawer.open{
+  right:0;
 }
 
 button{
@@ -160,17 +160,25 @@ button{
 <body>
 
 <header>
-  <div class="logo">HOME KART</div>
-  <div class="cart" onclick="openCart()">Cart (<span id="count">0</span>)</div>
+  <div class="logo">HOME KART PRO</div>
+
+  <div class="search">
+    <input oninput="search(this.value)" placeholder="Search products...">
+  </div>
+
+  <div class="cart" onclick="toggleCart()">
+    Cart (<span id="count">0</span>)
+  </div>
 </header>
 
-<div class="hero">Premium Household Store</div>
+<div class="hero">Premium Shopping Experience</div>
 
 <div class="container" id="home"></div>
 
 <div id="productPage"></div>
 
-<div id="cartPage"></div>
+<!-- CART DRAWER -->
+<div id="cartDrawer"></div>
 
 <script>
 const SHEET_ID="1tsx2UL01ZvHRVR_sSArcD7X_mvAZ4XDi9rABF59HIDY";
@@ -179,7 +187,7 @@ let products=[];
 let cart=[];
 let selectedProduct=null;
 
-/* LOAD DATA */
+/* LOAD */
 async function load(){
   const res=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`);
   const text=await res.text();
@@ -194,14 +202,14 @@ async function load(){
     desc:r.c[5]?.v
   }));
 
-  renderHome();
+  render(products);
 }
 
-/* HOME */
-function renderHome(){
+/* RENDER */
+function render(list){
   document.getElementById("home").innerHTML=
-  products.map((p,i)=>`
-    <div class="card" onclick="openProduct(${i})">
+  list.map((p,i)=>`
+    <div class="card" onclick="openProduct(${products.indexOf(p)})">
       <img src="${p.img}">
       <div class="card-body">
         <div>${p.name}</div>
@@ -211,22 +219,27 @@ function renderHome(){
   `).join("");
 }
 
+/* SEARCH */
+function search(val){
+  let filtered=products.filter(p=>p.name.toLowerCase().includes(val.toLowerCase()));
+  render(filtered);
+}
+
 /* PRODUCT */
 function openProduct(i){
   selectedProduct=products[i];
 
   let related=products.filter(p=>p.cat===selectedProduct.cat);
 
-  document.getElementById("home").style.display="none";
   document.getElementById("productPage").style.display="block";
+  document.getElementById("home").style.display="none";
 
   document.getElementById("productPage").innerHTML=`
     <button onclick="back()">← Back</button>
 
-    <div class="product-wrapper">
+    <div class="product">
       <img src="${selectedProduct.img}">
-
-      <div class="details">
+      <div>
         <h2>${selectedProduct.name}</h2>
         <p>${selectedProduct.desc}</p>
         <h3>₹${selectedProduct.price}</h3>
@@ -238,7 +251,7 @@ function openProduct(i){
 
     <h3>Related Products</h3>
     <div class="related">
-      ${related.map((p,i)=>`
+      ${related.map(p=>`
         <div class="card" onclick="openProduct(${products.indexOf(p)})">
           <img src="${p.img}">
           <div class="card-body">
@@ -251,41 +264,36 @@ function openProduct(i){
   `;
 }
 
-/* BUY NOW FIXED */
+/* BUY NOW FIX */
 function buyNow(){
-  cart=[selectedProduct]; // ONLY THIS PRODUCT
-  openCart(true);
+  cart=[selectedProduct];
+  openCart();
 }
 
 /* CART */
 function addCart(){
   cart.push(selectedProduct);
   document.getElementById("count").innerText=cart.length;
+  openCart();
 }
 
-/* CART PAGE */
-function openCart(){
-  document.getElementById("home").style.display="none";
-  document.getElementById("productPage").style.display="none";
-  document.getElementById("cartPage").style.display="block";
+/* CART DRAWER */
+function toggleCart(){
+  document.getElementById("cartDrawer").classList.toggle("open");
+  renderCart();
+}
 
-  document.getElementById("cartPage").innerHTML=`
-    <button onclick="back()">← Continue Shopping</button>
+function renderCart(){
+  document.getElementById("cartDrawer").innerHTML=`
+    <h3>Cart</h3>
 
-    <div class="checkout-box">
-      <div class="left">
-        <h2>Cart Items</h2>
-        ${cart.map(p=>`
-          <p>${p.name} - ₹${p.price}</p>
-        `).join("")}
-      </div>
+    ${cart.map(p=>`
+      <p>${p.name} - ₹${p.price}</p>
+    `).join("")}
 
-      <div class="right">
-        <h3>Summary</h3>
-        <p>Total: ₹${cart.reduce((a,b)=>a+b.price,0)}</p>
-        <button onclick="checkout()">Checkout</button>
-      </div>
-    </div>
+    <h4>Total: ₹${cart.reduce((a,b)=>a+b.price,0)}</h4>
+
+    <button onclick="checkout()">Checkout</button>
   `;
 }
 
@@ -293,14 +301,13 @@ function openCart(){
 function checkout(){
   cart=[];
   document.getElementById("count").innerText=0;
-  back();
+  alert("Order placed successfully!");
 }
 
 /* BACK */
 function back(){
   document.getElementById("home").style.display="grid";
   document.getElementById("productPage").style.display="none";
-  document.getElementById("cartPage").style.display="none";
 }
 
 load();
