@@ -39,11 +39,8 @@
     .hero-content h1 { font-size: 2.8rem; text-shadow: 0 2px 10px rgba(0,0,0,0.7); }
 
     .container { padding: 20px 15px; max-width: 1200px; margin: 0 auto; }
-    main {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 15px;
-    }
+    main { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
+
     .card {
       background: white;
       border-radius: 12px;
@@ -53,61 +50,11 @@
     }
     .card img { width: 100%; aspect-ratio: 1 / 1.05; object-fit: cover; }
     .info { padding: 12px; }
-    .old-price { text-decoration: line-through; color: #999; font-size: 0.95rem; }
+    .old-price { text-decoration: line-through; color: #999; }
     .current-price { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
 
-    .add-cart-btn {
-      width: 100%; padding: 10px; background: var(--primary); color: white;
-      border: none; border-radius: 8px; margin-top: 8px;
-    }
-
-    /* Cart Modal */
-    .cart-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 3000;
-    }
-    .cart-content {
-      background: white;
-      width: 90%;
-      max-width: 420px;
-      margin: 60px auto;
-      border-radius: 12px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .cart-header {
-      padding: 15px 20px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .cart-item {
-      display: flex;
-      padding: 12px 20px;
-      border-bottom: 1px solid #eee;
-    }
-    .cart-item img {
-      width: 70px;
-      height: 70px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-right: 12px;
-    }
-    .remove-btn {
-      color: #e74c3c;
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-
-    /* Product Detail Page */
-    .detail-page {
+    /* Detail Page */
+    .detail-page, .cart-page, .checkout-page {
       display: none;
       position: fixed;
       top: 0; left: 0;
@@ -116,8 +63,24 @@
       z-index: 2000;
       overflow-y: auto;
     }
-    .detail-content { padding: 15px; }
-    .detail-img { width: 100%; max-height: 45vh; object-fit: contain; background: #f9f9f9; border-radius: 12px; }
+    .detail-content, .cart-content, .checkout-content { padding: 15px; }
+
+    .quantity {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .quantity button {
+      width: 35px; height: 35px;
+      border: 1px solid #ddd;
+      background: white;
+      font-size: 1.2rem;
+    }
+
+    /* Cart & Checkout */
+    .cart-item { display: flex; padding: 12px 0; border-bottom: 1px solid #eee; }
+    .cart-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 12px; }
 
     .whatsapp-float {
       position: fixed; bottom: 20px; right: 20px;
@@ -137,7 +100,7 @@
 <header>
   <div class="header-content">
     <div class="logo">HOME KART</div>
-    <div class="cart-icon" onclick="showCart()">
+    <div class="cart-icon" onclick="showCartPage()">
       <i class="fas fa-shopping-cart"></i>
       <span class="cart-count" id="cartCount">0</span>
     </div>
@@ -159,7 +122,6 @@
   <p><strong>Home Kart</strong> © 2026 • Premium Household Store</p>
 </footer>
 
-<!-- Floating WhatsApp -->
 <a href="https://wa.me/9656201833" class="whatsapp-float" target="_blank">
   <i class="fab fa-whatsapp"></i>
 </a>
@@ -167,33 +129,57 @@
 <!-- Product Detail Page -->
 <div id="detailPage" class="detail-page">
   <div class="detail-content">
-    <span onclick="closeDetail()" style="font-size:28px; float:right; cursor:pointer; padding:10px;">✕</span>
-    <img id="detailImg" class="detail-img" src="">
-    <h1 id="detailName" style="margin:15px 0 8px; font-size:1.8rem;"></h1>
-    <div id="detailPrice" style="margin:10px 0;"></div>
-    <div id="detailDesc" style="line-height:1.7; color:#444; margin:20px 0;"></div>
+    <span onclick="closeDetail()" style="font-size:28px;float:right;cursor:pointer;">✕</span>
+    <img id="detailImg" style="width:100%; border-radius:12px;" src="">
+    <h1 id="detailName" style="margin:15px 0 8px;"></h1>
+    
+    <div id="detailPrice" style="font-size:1.8rem; font-weight:700; color:var(--primary);"></div>
+    
+    <div class="quantity">
+      <button onclick="changeQty(-1)">−</button>
+      <span id="quantity" style="font-size:1.3rem; width:40px; text-align:center;">1</span>
+      <button onclick="changeQty(1)">+</button>
+    </div>
 
-    <button onclick="addCurrentToCart()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1.1rem;">
-      ADD TO CART
+    <div id="detailDesc" style="line-height:1.7; margin:20px 0;"></div>
+
+    <button onclick="buyNow()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1.2rem; margin:10px 0;">
+      BUY NOW
     </button>
   </div>
 </div>
 
-<!-- Cart Modal -->
-<div id="cartModal" class="cart-modal">
+<!-- Full Screen Cart Page -->
+<div id="cartPage" class="cart-page">
   <div class="cart-content">
-    <div class="cart-header">
-      <h3>Your Cart (<span id="modalCartCount">0</span>)</h3>
-      <span onclick="closeCart()" style="font-size:28px; cursor:pointer;">✕</span>
-    </div>
+    <h2 style="padding:15px; border-bottom:1px solid #eee;">Your Cart (<span id="cartPageCount">0</span>)</h2>
+    <div id="cartPageItems"></div>
     
-    <div id="cartItems" style="padding:10px 0;"></div>
-
-    <div style="padding:15px 20px; border-top:1px solid #eee;">
-      <button onclick="proceedToCheckout()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1.1rem;">
+    <div style="padding:20px; border-top:2px solid #eee;">
+      <h3>Total: ₹<span id="cartTotal">0</span></h3>
+      <button onclick="proceedFromCart()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:8px; margin-top:15px;">
         PROCEED TO CHECKOUT
       </button>
+      <button onclick="closeCartPage()" style="width:100%; padding:14px; background:#eee; margin-top:10px;">Continue Shopping</button>
     </div>
+  </div>
+</div>
+
+<!-- Checkout Page -->
+<div id="checkoutPage" class="checkout-page">
+  <div class="checkout-content">
+    <h2>Checkout</h2>
+    <div id="checkoutSummary" style="margin:20px 0;"></div>
+    
+    <h3>Delivery Details</h3>
+    <input type="tel" id="phone" placeholder="Phone Number *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+    <textarea id="address" rows="4" placeholder="Full Address *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;"></textarea>
+    <input type="text" id="pincode" placeholder="Pin Code *" maxlength="6" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+
+    <button onclick="submitOrder()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:8px; margin-top:20px;">
+      SEND ORDER VIA WHATSAPP
+    </button>
+    <button onclick="closeCheckout()" style="width:100%; padding:14px; background:#eee; margin-top:10px;">Back</button>
   </div>
 </div>
 
@@ -201,7 +187,8 @@
   const SHEET_ID = '1tsx2UL01ZvHRVR_sSArcD7X_mvAZ4XDi9rABF59HIDY';
   let allProducts = [];
   let cart = JSON.parse(localStorage.getItem('homeKartCart')) || [];
-  let currentIndex = -1;
+  let currentProduct = null;
+  let currentQty = 1;
 
   async function fetchProducts() {
     try {
@@ -213,22 +200,20 @@
       allProducts = data.table.rows.map(row => ({
         name: row.c[0]?.v || '',
         oldPrice: row.c[1]?.v || '',
-        price: row.c[2]?.v || 0,
+        price: Number(row.c[2]?.v) || 0,
         photo: row.c[4]?.v || '',
-        details: row.c[5]?.v || 'Premium quality household product from Home Kart.'
+        details: row.c[5]?.v || 'Premium quality household product.'
       }));
 
       displayProducts();
       updateCartCount();
-    } catch(e) {
-      console.error(e);
-    }
+    } catch(e) { console.error(e); }
   }
 
   function displayProducts() {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = allProducts.map((p, i) => `
-      <div class="card" onclick="showProductDetail(${i})">
+      <div class="card" onclick="showDetail(${i})">
         <img src="${p.photo}" alt="${p.name}">
         <div class="info">
           <h4>${p.name}</h4>
@@ -242,80 +227,139 @@
     `).join('');
   }
 
-  function showProductDetail(index) {
-    currentIndex = index;
-    const p = allProducts[index];
-    document.getElementById('detailImg').src = p.photo;
-    document.getElementById('detailName').innerText = p.name;
-    
-    let priceHTML = p.oldPrice ? `<span class="old-price" style="font-size:1.2rem;">₹${p.oldPrice}</span> ` : '';
-    priceHTML += `<span class="current-price" style="font-size:1.8rem;">₹${p.price}</span>`;
-    document.getElementById('detailPrice').innerHTML = priceHTML;
-    
-    document.getElementById('detailDesc').innerHTML = `<p>${p.details}</p>`;
+  function showDetail(i) {
+    currentProduct = allProducts[i];
+    currentQty = 1;
+    document.getElementById('detailImg').src = currentProduct.photo;
+    document.getElementById('detailName').innerText = currentProduct.name;
+    updateDetailPrice();
+    document.getElementById('detailDesc').innerHTML = `<p>${currentProduct.details}</p>`;
     document.getElementById('detailPage').style.display = 'block';
   }
 
-  function closeDetail() {
-    document.getElementById('detailPage').style.display = 'none';
+  function updateDetailPrice() {
+    const total = currentProduct.price * currentQty;
+    document.getElementById('detailPrice').innerHTML = `₹${total} <small style="font-size:1rem;">(${currentQty} × ₹${currentProduct.price})</small>`;
+    document.getElementById('quantity').innerText = currentQty;
   }
 
-  function addCurrentToCart() {
-    if (currentIndex >= 0) addToCart(currentIndex);
+  function changeQty(n) {
+    currentQty = Math.max(1, currentQty + n);
+    updateDetailPrice();
+  }
+
+  function buyNow() {
+    addToCartWithQty(currentProduct, currentQty);
     closeDetail();
+    showCheckoutPage();
   }
 
-  function addToCart(index) {
-    cart.push(allProducts[index]);
+  function addToCart(i) {
+    addToCartWithQty(allProducts[i], 1);
+  }
+
+  function addToCartWithQty(product, qty) {
+    for(let i = 0; i < qty; i++) {
+      cart.push(product);
+    }
     localStorage.setItem('homeKartCart', JSON.stringify(cart));
     updateCartCount();
-    alert(`${allProducts[index].name} added to cart!`);
+    alert(`${product.name} (${qty} qty) added to cart!`);
   }
 
   function updateCartCount() {
     document.getElementById('cartCount').textContent = cart.length;
   }
 
-  function showCart() {
+  function showCartPage() {
     if (cart.length === 0) {
       alert("നിന്റെ കാർട്ട് ശൂന്യമാണ്!");
       return;
     }
-
     let html = '';
+    let total = 0;
+
     cart.forEach((item, index) => {
+      total += item.price;
       html += `
         <div class="cart-item">
-          <img src="${item.photo}" alt="${item.name}">
+          <img src="${item.photo}">
           <div style="flex:1;">
             <div>${item.name}</div>
-            <div style="color:var(--primary); font-weight:700;">₹${item.price}</div>
+            <div style="color:var(--primary);font-weight:700;">₹${item.price}</div>
           </div>
-          <button class="remove-btn" onclick="removeFromCart(${index})">✕</button>
+          <button onclick="removeFromCart(${index})" style="color:red;background:none;border:none;font-size:1.5rem;">✕</button>
         </div>`;
     });
 
-    document.getElementById('cartItems').innerHTML = html;
-    document.getElementById('modalCartCount').textContent = cart.length;
-    document.getElementById('cartModal').style.display = 'block';
+    document.getElementById('cartPageItems').innerHTML = html;
+    document.getElementById('cartPageCount').innerText = cart.length;
+    document.getElementById('cartTotal').innerText = total;
+    document.getElementById('cartPage').style.display = 'block';
   }
 
   function removeFromCart(index) {
     cart.splice(index, 1);
     localStorage.setItem('homeKartCart', JSON.stringify(cart));
     updateCartCount();
-    showCart(); // Refresh cart
+    showCartPage();
   }
 
-  function closeCart() {
-    document.getElementById('cartModal').style.display = 'none';
+  function closeCartPage() {
+    document.getElementById('cartPage').style.display = 'none';
   }
 
-  function proceedToCheckout() {
-    closeCart();
-    // Simple checkout alert for now
-    alert("Proceeding to Checkout...\n\nFill your details in next step.");
-    // You can expand checkout page later if needed
+  function proceedFromCart() {
+    closeCartPage();
+    showCheckoutPage();
+  }
+
+  function showCheckoutPage() {
+    let html = '';
+    let total = 0;
+    cart.forEach(item => {
+      total += item.price;
+      html += `<div>${item.name} - ₹${item.price}</div>`;
+    });
+    document.getElementById('checkoutSummary').innerHTML = html + `<h3 style="margin-top:15px;">Total: ₹${total}</h3>`;
+    document.getElementById('checkoutPage').style.display = 'block';
+  }
+
+  function closeCheckout() {
+    document.getElementById('checkoutPage').style.display = 'none';
+  }
+
+  function submitOrder() {
+    const phone = document.getElementById('phone').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const pincode = document.getElementById('pincode').value.trim();
+
+    if (!phone || !address || !pincode) {
+      alert("ദയവായി എല്ലാ വിവരങ്ങളും പൂരിപ്പിക്കുക");
+      return;
+    }
+
+    let msg = `🛒 New Order - Home Kart\n\n`;
+    msg += `📞 Phone: ${phone}\n`;
+    msg += `📍 Address: ${address}\n`;
+    msg += `📌 Pincode: ${pincode}\n\n`;
+    msg += `🛍️ Items:\n`;
+
+    cart.forEach(item => {
+      msg += `- ${item.name} - ₹${item.price}\n`;
+    });
+
+    window.open(`https://wa.me/9656201833?text=${encodeURIComponent(msg)}`, "_blank");
+
+    cart = [];
+    localStorage.setItem('homeKartCart', JSON.stringify(cart));
+    updateCartCount();
+    closeCheckout();
+    alert("നന്ദി! ഓർഡർ WhatsApp-ൽ അയച്ചു.");
+  }
+
+  function closeDetail() {
+    document.getElementById('detailPage').style.display = 'none';
   }
 
   fetchProducts();
