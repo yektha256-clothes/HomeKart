@@ -61,6 +61,51 @@
       border: none; border-radius: 8px; margin-top: 8px;
     }
 
+    /* Cart Modal */
+    .cart-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 3000;
+    }
+    .cart-content {
+      background: white;
+      width: 90%;
+      max-width: 420px;
+      margin: 60px auto;
+      border-radius: 12px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .cart-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cart-item {
+      display: flex;
+      padding: 12px 20px;
+      border-bottom: 1px solid #eee;
+    }
+    .cart-item img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 12px;
+    }
+    .remove-btn {
+      color: #e74c3c;
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
     /* Product Detail Page */
     .detail-page {
       display: none;
@@ -73,27 +118,6 @@
     }
     .detail-content { padding: 15px; }
     .detail-img { width: 100%; max-height: 45vh; object-fit: contain; background: #f9f9f9; border-radius: 12px; }
-    .detail-price { margin: 15px 0; }
-    .detail-desc { line-height: 1.7; color: #333; margin: 20px 0; }
-
-    .related-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-top: 30px;
-    }
-
-    /* Checkout Page */
-    .checkout-page {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: white;
-      z-index: 3000;
-      overflow-y: auto;
-    }
-    .checkout-content { padding: 20px; max-width: 500px; margin: 0 auto; }
 
     .whatsapp-float {
       position: fixed; bottom: 20px; right: 20px;
@@ -144,41 +168,32 @@
 <div id="detailPage" class="detail-page">
   <div class="detail-content">
     <span onclick="closeDetail()" style="font-size:28px; float:right; cursor:pointer; padding:10px;">✕</span>
-    
     <img id="detailImg" class="detail-img" src="">
-    
     <h1 id="detailName" style="margin:15px 0 8px; font-size:1.8rem;"></h1>
-    
-    <div id="detailPrice" class="detail-price"></div>
-    
-    <div id="detailDesc" class="detail-desc"></div>
+    <div id="detailPrice" style="margin:10px 0;"></div>
+    <div id="detailDesc" style="line-height:1.7; color:#444; margin:20px 0;"></div>
 
-    <button onclick="addCurrentToCart()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1.1rem; margin:15px 0;">
+    <button onclick="addCurrentToCart()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1.1rem;">
       ADD TO CART
     </button>
-
-    <h3 style="margin:25px 0 15px;">Related Products</h3>
-    <div id="relatedProducts" class="related-grid"></div>
   </div>
 </div>
 
-<!-- Checkout Page -->
-<div id="checkoutPage" class="checkout-page">
-  <div class="checkout-content">
-    <h2>🛒 Your Cart</h2>
-    <div id="checkoutItems" style="margin:20px 0;"></div>
+<!-- Cart Modal -->
+<div id="cartModal" class="cart-modal">
+  <div class="cart-content">
+    <div class="cart-header">
+      <h3>Your Cart (<span id="modalCartCount">0</span>)</h3>
+      <span onclick="closeCart()" style="font-size:28px; cursor:pointer;">✕</span>
+    </div>
+    
+    <div id="cartItems" style="padding:10px 0;"></div>
 
-    <h3>Delivery Details</h3>
-    <input type="tel" id="phone" placeholder="Phone Number *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
-    <textarea id="address" rows="4" placeholder="Full Address *" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;"></textarea>
-    <input type="text" id="pincode" placeholder="Pin Code *" maxlength="6" style="width:100%; padding:14px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
-
-    <button onclick="placeOrder()" style="width:100%; padding:16px; background:var(--primary); color:white; border:none; border-radius:8px; margin-top:20px;">
-      ORDER VIA WHATSAPP
-    </button>
-    <button onclick="closeCheckout()" style="width:100%; padding:14px; background:#eee; color:#333; border:none; border-radius:8px; margin-top:10px;">
-      Cancel
-    </button>
+    <div style="padding:15px 20px; border-top:1px solid #eee;">
+      <button onclick="proceedToCheckout()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:1.1rem;">
+        PROCEED TO CHECKOUT
+      </button>
+    </div>
   </div>
 </div>
 
@@ -230,31 +245,14 @@
   function showProductDetail(index) {
     currentIndex = index;
     const p = allProducts[index];
-
     document.getElementById('detailImg').src = p.photo;
     document.getElementById('detailName').innerText = p.name;
-
+    
     let priceHTML = p.oldPrice ? `<span class="old-price" style="font-size:1.2rem;">₹${p.oldPrice}</span> ` : '';
     priceHTML += `<span class="current-price" style="font-size:1.8rem;">₹${p.price}</span>`;
     document.getElementById('detailPrice').innerHTML = priceHTML;
-
+    
     document.getElementById('detailDesc').innerHTML = `<p>${p.details}</p>`;
-
-    // Related Products
-    const relatedHTML = allProducts
-      .filter((_, i) => i !== index)
-      .slice(0, 6)
-      .map(rp => `
-        <div class="card" onclick="closeDetail(); setTimeout(() => showProductDetail(${allProducts.indexOf(rp)}), 250)">
-          <img src="${rp.photo}" style="height:130px; object-fit:cover;">
-          <div class="info" style="padding:8px;">
-            <small>${rp.name}</small><br>
-            <span class="current-price" style="font-size:1rem;">₹${rp.price}</span>
-          </div>
-        </div>
-      `).join('');
-
-    document.getElementById('relatedProducts').innerHTML = relatedHTML;
     document.getElementById('detailPage').style.display = 'block';
   }
 
@@ -264,6 +262,7 @@
 
   function addCurrentToCart() {
     if (currentIndex >= 0) addToCart(currentIndex);
+    closeDetail();
   }
 
   function addToCart(index) {
@@ -282,42 +281,41 @@
       alert("നിന്റെ കാർട്ട് ശൂന്യമാണ്!");
       return;
     }
-    // Show checkout page
+
     let html = '';
-    let total = 0;
-    cart.forEach(item => {
-      total += Number(item.price);
-      html += `<div style="padding:8px 0; border-bottom:1px solid #eee;">${item.name} - ₹${item.price}</div>`;
+    cart.forEach((item, index) => {
+      html += `
+        <div class="cart-item">
+          <img src="${item.photo}" alt="${item.name}">
+          <div style="flex:1;">
+            <div>${item.name}</div>
+            <div style="color:var(--primary); font-weight:700;">₹${item.price}</div>
+          </div>
+          <button class="remove-btn" onclick="removeFromCart(${index})">✕</button>
+        </div>`;
     });
-    html += `<p style="font-weight:700; margin-top:15px;">Total: ₹${total}</p>`;
-    document.getElementById('checkoutItems').innerHTML = html;
-    document.getElementById('checkoutPage').style.display = 'block';
+
+    document.getElementById('cartItems').innerHTML = html;
+    document.getElementById('modalCartCount').textContent = cart.length;
+    document.getElementById('cartModal').style.display = 'block';
   }
 
-  function closeCheckout() {
-    document.getElementById('checkoutPage').style.display = 'none';
-  }
-
-  function placeOrder() {
-    const phone = document.getElementById('phone').value.trim();
-    const address = document.getElementById('address').value.trim();
-    const pincode = document.getElementById('pincode').value.trim();
-
-    if (!phone || !address || !pincode) {
-      alert("ദയവായി എല്ലാ വിവരങ്ങളും പൂരിപ്പിക്കുക");
-      return;
-    }
-
-    let msg = `🛒 New Order - Home Kart\n\n📞 Phone: ${phone}\n📍 Address: ${address}\n📌 Pincode: ${pincode}\n\n🛍️ Items:\n`;
-    cart.forEach(item => msg += `- ${item.name} - ₹${item.price}\n`);
-
-    window.open(`https://wa.me/9656201833?text=${encodeURIComponent(msg)}`, "_blank");
-
-    cart = [];
+  function removeFromCart(index) {
+    cart.splice(index, 1);
     localStorage.setItem('homeKartCart', JSON.stringify(cart));
     updateCartCount();
-    closeCheckout();
-    alert("നന്ദി! ഓർഡർ WhatsApp-ൽ അയച്ചു.");
+    showCart(); // Refresh cart
+  }
+
+  function closeCart() {
+    document.getElementById('cartModal').style.display = 'none';
+  }
+
+  function proceedToCheckout() {
+    closeCart();
+    // Simple checkout alert for now
+    alert("Proceeding to Checkout...\n\nFill your details in next step.");
+    // You can expand checkout page later if needed
   }
 
   fetchProducts();
